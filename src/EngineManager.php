@@ -32,7 +32,7 @@ class EngineManager extends Manager
     {
         $this->ensureAlgoliaClientIsInstalled();
 
-        UserAgent::addCustomUserAgent('Laravel Scout', '8.2.0');
+        UserAgent::addCustomUserAgent('Laravel Scout', '8.2.1');
 
         $config = SearchConfig::create(
             config('scout.algolia.id'),
@@ -83,7 +83,7 @@ class EngineManager extends Manager
             $headers['X-Forwarded-For'] = $ip;
         }
 
-        if ($user = request()->user() && method_exists($user, 'getKey')) {
+        if (($user = request()->user()) && method_exists($user, 'getKey')) {
             $headers['X-Algolia-UserToken'] = $user->getKey();
         }
 
