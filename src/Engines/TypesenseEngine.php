@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
+use Laravel\Scout\Exceptions\NotSupportedException;
 use stdClass;
 use Typesense\Client as Typesense;
 use Typesense\Collection as TypesenseCollection;
 use Typesense\Exceptions\ObjectAlreadyExists;
+use Typesense\Exceptions\ObjectNotFound;
 use Typesense\Exceptions\TypesenseClientError;
 
 class TypesenseEngine extends Engine
@@ -254,7 +256,13 @@ class TypesenseEngine extends Engine
             return call_user_func($builder->callback, $documents, $builder->query, $options);
         }
 
-        return $documents->search($options);
+        try {
+            return $documents->search($options);
+        } catch (ObjectNotFound) {
+            $this->getOrCreateCollectionFromModel($builder->model, $builder->index, true);
+
+            return $documents->search($options);
+        }
     }
 
     /**
@@ -570,11 +578,11 @@ class TypesenseEngine extends Engine
      * @param  array  $options
      * @return void
      *
-     * @throws \Exception
+     * @throws NotSupportedException
      */
     public function createIndex($name, array $options = [])
     {
-        throw new Exception('Typesense indexes are created automatically upon adding objects.');
+        throw new NotSupportedException('Typesense indexes are created automatically upon adding objects.');
     }
 
     /**
