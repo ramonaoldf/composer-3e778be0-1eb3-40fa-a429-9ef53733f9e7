@@ -48,6 +48,10 @@ trait Searchable
      */
     public function queueMakeSearchable($models)
     {
+        if ($models->isEmpty()) {
+            return;
+        }
+
         if (! config('scout.queue')) {
             return $models->first()->searchableUsing()->update($models);
         }
@@ -64,6 +68,10 @@ trait Searchable
      */
     public function queueRemoveFromSearch($models)
     {
+        if ($models->isEmpty()) {
+            return;
+        }
+        
         return $models->first()->searchableUsing()->delete($models);
     }
 
@@ -71,7 +79,7 @@ trait Searchable
      * Perform a search against the model's indexed data.
      *
      * @param  string  $query
-     * @return \Illuminate\Support\Collection
+     * @return \Laravel\Scout\Builder
      */
     public static function search($query)
     {
