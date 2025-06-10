@@ -35,7 +35,7 @@ class EngineManager extends Manager
     {
         $this->ensureAlgoliaClientIsInstalled();
 
-        UserAgent::addCustomUserAgent('Laravel Scout', '9.2.3');
+        UserAgent::addCustomUserAgent('Laravel Scout', '9.2.4');
 
         $config = SearchConfig::create(
             config('scout.algolia.id'),
@@ -43,6 +43,18 @@ class EngineManager extends Manager
         )->setDefaultHeaders(
             $this->defaultAlgoliaHeaders()
         );
+
+        if (is_int($connectTimeout = config('scout.algolia.connect_timeout'))) {
+            $config->setConnectTimeout($connectTimeout);
+        }
+
+        if (is_int($readTimeout = config('scout.algolia.read_timeout'))) {
+            $config->setReadTimeout($readTimeout);
+        }
+
+        if (is_int($writeTimeout = config('scout.algolia.write_timeout'))) {
+            $config->setWriteTimeout($writeTimeout);
+        }
 
         return new AlgoliaEngine(Algolia::createWithConfig($config), config('scout.soft_delete'));
     }
