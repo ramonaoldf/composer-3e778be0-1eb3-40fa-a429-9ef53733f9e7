@@ -139,6 +139,10 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
      */
     protected function initializeSearchQuery(Builder $builder, array $columns, array $prefixColumns = [], array $fullTextColumns = [])
     {
+        if (blank($builder->query)) {
+            return $builder->model->query();
+        }
+
         return $builder->model->query()->where(function ($query) use ($builder, $columns, $prefixColumns, $fullTextColumns) {
             $connectionType = $builder->model->getConnection()->getDriverName();
 
@@ -175,7 +179,7 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
     }
 
     /**
-     * Add additional, developer defined constraints to the serach query.
+     * Add additional, developer defined constraints to the search query.
      *
      * @param  \Laravel\Scout\Builder  $builder
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -231,7 +235,7 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
     }
 
     /**
-     * Get the full-text columns for the query.
+     * Get the prefix search columns for the query.
      *
      * @param  \Laravel\Scout\Builder  $builder
      * @return array
