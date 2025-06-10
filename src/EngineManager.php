@@ -4,13 +4,15 @@ namespace Laravel\Scout;
 
 use Illuminate\Support\Manager;
 use AlgoliaSearch\Client as Algolia;
+use Laravel\Scout\Engines\NullEngine;
+use Laravel\Scout\Engines\AlgoliaEngine;
 
 class EngineManager extends Manager
 {
     /**
      * Get a driver instance.
      *
-     * @param  string  $driver
+     * @param  string|null  $name
      * @return mixed
      */
     public function engine($name = null)
@@ -21,11 +23,11 @@ class EngineManager extends Manager
     /**
      * Create an Algolia engine instance.
      *
-     * @return Engines\AlgoliaEngine
+     * @return \Laravel\Scout\Engines\AlgoliaEngine
      */
     public function createAlgoliaDriver()
     {
-        return new Engines\AlgoliaEngine(new Algolia(
+        return new AlgoliaEngine(new Algolia(
             config('scout.algolia.id'), config('scout.algolia.secret')
         ));
     }
@@ -33,11 +35,11 @@ class EngineManager extends Manager
     /**
      * Create a Null engine instance.
      *
-     * @return Engines\NullEngine
+     * @return \Laravel\Scout\Engines\NullEngine
      */
     public function createNullDriver()
     {
-        return new Engines\NullEngine;
+        return new NullEngine;
     }
 
     /**

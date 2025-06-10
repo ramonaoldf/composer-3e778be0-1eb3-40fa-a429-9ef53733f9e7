@@ -2,6 +2,7 @@
 
 namespace Laravel\Scout;
 
+use Laravel\Scout\Jobs\MakeSearchable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as BaseCollection;
 
@@ -34,7 +35,7 @@ trait Searchable
             $self->queueMakeSearchable($this);
         });
 
-        BaseCollection::macro('unsearchable', function () {
+        BaseCollection::macro('unsearchable', function () use ($self) {
             $self->queueRemoveFromSearch($this);
         });
     }
@@ -42,7 +43,7 @@ trait Searchable
     /**
      * Dispatch the job to make the given models searchable.
      *
-     * @param  Collection  $models
+     * @param  \Illuminate\Database\Eloquent\Collection  $models
      * @return void
      */
     public function queueMakeSearchable($models)
@@ -51,14 +52,14 @@ trait Searchable
             return $models->first()->searchableUsing()->update($models);
         }
 
-        dispatch((new Jobs\MakeSearchable($models))
+        dispatch((new MakeSearchable($models))
                 ->onConnection($models->first()->syncWithSearchUsing()));
     }
 
     /**
      * Dispatch the job to make the given models unsearchable.
      *
-     * @param  Collection  $models
+     * @param  \Illuminate\Database\Eloquent\Collection  $models
      * @return void
      */
     public function queueRemoveFromSearch($models)
@@ -159,7 +160,7 @@ trait Searchable
      */
     public function searchableAs()
     {
-        return $this->getTable();
+        return config('scout.prefix').$this->getTable();
     }
 
     /**
