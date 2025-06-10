@@ -281,4 +281,14 @@ trait Searchable
 
         return $this;
     }
+
+    /**
+     * Get the value used to index the model.
+     *
+     * @return mixed
+     */
+    public function getScoutKey()
+    {
+        return $this->getKey();
+    }
 }
