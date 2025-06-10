@@ -33,6 +33,13 @@ class Builder
     public $callback;
 
     /**
+     * Optional callback before model query execution.
+     *
+     * @var \Closure|null
+     */
+    public $queryCallback;
+
+    /**
      * The custom index specified for the search.
      *
      * @var string
