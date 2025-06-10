@@ -72,7 +72,9 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
     public function paginate(Builder $builder, $perPage, $page)
     {
         return $this->buildSearchQuery($builder)
-                ->orderBy($builder->model->getKeyName(), 'desc')
+                ->when(! $this->getFullTextColumns($builder), function ($query) use ($builder) {
+                    $query->orderBy($builder->model->getKeyName(), 'desc');
+                })
                 ->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -87,7 +89,9 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
     public function simplePaginate(Builder $builder, $perPage, $page)
     {
         return $this->buildSearchQuery($builder)
-                ->orderBy($builder->model->getKeyName(), 'desc')
+                ->when(! $this->getFullTextColumns($builder), function ($query) use ($builder) {
+                    $query->orderBy($builder->model->getKeyName(), 'desc');
+                })
                 ->simplePaginate($perPage, ['*'], 'page', $page);
     }
 
@@ -101,11 +105,14 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
      */
     protected function searchModels(Builder $builder, $page = null, $perPage = null)
     {
-        return $this->buildSearchQuery($builder)->when(
-            ! is_null($page) && ! is_null($perPage),
-            function ($query) use ($page, $perPage) {
-                return $query->forPage($page, $perPage);
-            })->orderBy($builder->model->getKeyName(), 'desc')->get();
+        return $this->buildSearchQuery($builder)
+            ->when(! is_null($page) && ! is_null($perPage), function ($query) use ($page, $perPage) {
+                $query->forPage($page, $perPage);
+            })
+            ->when(! $this->getFullTextColumns($builder), function ($query) use ($builder) {
+                $query->orderBy($builder->model->getKeyName(), 'desc');
+            })
+            ->get();
     }
 
     /**
@@ -199,6 +206,8 @@ class DatabaseEngine extends Engine implements PaginatesEloquentModels
             foreach ($builder->whereIns as $key => $values) {
                 $query->whereIn($key, $values);
             }
+        })->when(! is_null($builder->queryCallback), function ($query) use ($builder) {
+            call_user_func($builder->queryCallback, $query);
         });
     }
 
