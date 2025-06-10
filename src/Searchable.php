@@ -5,7 +5,6 @@ namespace Laravel\Scout;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection as BaseCollection;
-use Illuminate\Support\Str;
 
 trait Searchable
 {
@@ -146,7 +145,9 @@ trait Searchable
             ->when($softDelete, function ($query) {
                 $query->withTrashed();
             })
-            ->orderBy($self->getKeyName())
+            ->orderBy(
+                $self->qualifyColumn($self->getScoutKeyName())
+            )
             ->searchable($chunk);
     }
 
@@ -246,7 +247,7 @@ trait Searchable
             'whereIn';
 
         return $query->{$whereIn}(
-            $this->getScoutKeyName(), $ids
+            $this->qualifyColumn($this->getScoutKeyName()), $ids
         );
     }
 
@@ -388,17 +389,7 @@ trait Searchable
      */
     public function getScoutKeyName()
     {
-        return $this->getQualifiedKeyName();
-    }
-
-    /**
-     * Get the unqualified Scout key name.
-     *
-     * @return string
-     */
-    public function getUnqualifiedScoutKeyName()
-    {
-        return Str::afterLast($this->getScoutKeyName(), '.');
+        return $this->getKeyName();
     }
 
     /**
