@@ -2,7 +2,6 @@
 
 namespace Laravel\Scout;
 
-use Laravel\Scout\Builder;
 use Laravel\Scout\Jobs\MakeSearchable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -102,7 +101,7 @@ trait Searchable
      * @param  Closure  $callback
      * @return \Laravel\Scout\Builder
      */
-    public static function search($query, $callback = null)
+    public static function search($query = '', $callback = null)
     {
         return new Builder(
             new static, $query, $callback, config('scout.soft_delete', false)
@@ -148,9 +147,7 @@ trait Searchable
     {
         $self = new static();
 
-        $self->newQuery()
-            ->orderBy($self->getKeyName())
-            ->unsearchable();
+        $self->searchableUsing()->flush($self);
     }
 
     /**
@@ -264,7 +261,7 @@ trait Searchable
     /**
      * Get the queue that should be used with syncing
      *
-     * @return  string
+     * @return string
      */
     public function syncWithSearchUsingQueue()
     {
