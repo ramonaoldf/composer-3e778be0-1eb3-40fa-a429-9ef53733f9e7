@@ -85,14 +85,17 @@ class CollectionEngine extends Engine
     protected function searchModels(Builder $builder)
     {
         $query = $builder->model->query()
-                        ->when(count($builder->wheres) > 0, function ($query) use ($builder) {
+                        ->when(! is_null($builder->callback), function ($query) {
+                            call_user_func($builder->callback, $query, $builder, $builder->query);
+                        })
+                        ->when(! $builder->callback && count($builder->wheres) > 0, function ($query) use ($builder) {
                             foreach ($builder->wheres as $key => $value) {
                                 if ($key !== '__soft_deleted') {
                                     $query->where($key, $value);
                                 }
                             }
                         })
-                        ->when(count($builder->whereIns) > 0, function ($query) use ($builder) {
+                        ->when(! $builder->callback && count($builder->whereIns) > 0, function ($query) use ($builder) {
                             foreach ($builder->whereIns as $key => $values) {
                                 $query->whereIn($key, $values);
                             }
@@ -117,7 +120,7 @@ class CollectionEngine extends Engine
             foreach ($columns as $column) {
                 $attribute = $model->{$column};
 
-                if (Str::contains($attribute, $builder->query)) {
+                if (Str::contains(Str::lower($attribute), Str::lower($builder->query))) {
                     return true;
                 }
             }
